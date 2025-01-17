@@ -26,9 +26,6 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const githubAction = require('@actions/github');
-            const coreAction = require('@actions/core');
-
             const maxRetries = 60; // Wait for up to 10 minutes (10s x 60 retries)
             const interval = 10000; // 10 seconds
             const eventType = "success-event"; // Event type to wait for
@@ -39,7 +36,7 @@ jobs:
             let retries = 0;
             let eventReceived = false;
             while (!eventReceived && retries < maxRetries) {
-              const events = await githubAction.rest.activity.listRepositoryEvents({
+              const events = await github.rest.activity.listRepositoryEvents({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
               });
@@ -62,5 +59,5 @@ jobs:
             }
 
             if (!eventReceived) {
-              coreAction.setFailed("Timed out waiting for success confirmation.");
+              core.setFailed("Timed out waiting for success confirmation.");
             }
