@@ -26,7 +26,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const github = require('@actions/github');
+            const githubAction = require('@actions/github');
             const core = require('@actions/core');
 
             const maxRetries = 60; // Wait for up to 10 minutes (10s x 60 retries)
@@ -39,7 +39,7 @@ jobs:
             let retries = 0;
             let eventReceived = false;
             while (!eventReceived && retries < maxRetries) {
-              const events = await github.rest.activity.listRepositoryEvents({
+              const events = await githubAction.rest.activity.listRepositoryEvents({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
               });
