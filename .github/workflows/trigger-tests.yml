@@ -26,22 +26,31 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
+            const fetch = require('node-fetch');
             const maxRetries = 60; // Wait for up to 10 minutes (10s x 60 retries)
             const interval = 10000; // 10 seconds
             const eventType = "success-event"; // Event type to wait for
             const payload = "desired-payload"; // Expected payload (optional)
-
-            console.log(`Checking for tests status...`);
-
+            
             let retries = 0;
             let eventReceived = false;
+            
             while (!eventReceived && retries < maxRetries) {
-              const events = await github.rest.activity.listRepositoryEvents({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
+              console.log(`Checking for event: ${eventType}, retry ${retries + 1}/${maxRetries}`);
+            
+              const response = await fetch(`https://api.github.com/repos/adriangavanescu/wordpress-automation/events`, {
+                headers: {
+                  'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`,
+                  'Accept': 'application/vnd.github.v3+json'
+                }
               });
-
-              for (const event of events.data) {
+            
+              if (!response.ok) {
+                throw new Error(`Failed to fetch events: ${response.statusText}`);
+              }
+            
+              const events = await response.json();
+              for (const event of events) {
                 if (event.type === 'RepositoryDispatchEvent' &&
                     event.payload.action === eventType &&
                     (!payload || event.payload.client_payload === payload)) {
@@ -50,14 +59,16 @@ jobs:
                   break;
                 }
               }
-
+            
               if (!eventReceived) {
                 await new Promise((resolve) => setTimeout(resolve, interval));
               }
-
+            
               retries++;
             }
-
+            
             if (!eventReceived) {
-              core.setFailed("Timed out waiting for success confirmation.");
+              core.setFailed("Timed out waiting for the event.");
             }
+          env:
+            GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
