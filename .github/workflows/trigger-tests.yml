@@ -29,8 +29,6 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const fetch = require('node-fetch');
-
             const maxRetries = 60; // Wait for up to 10 minutes (10s x 60 retries)
             const interval = 10000; // 10 seconds
             const eventType = "success-event"; // Event type to wait for
