@@ -1,0 +1,64 @@
+name: Trigger tests
+
+on:
+  pull_request:
+    branches: [master]
+    types: [opened, synchronize]
+
+jobs:
+  trigger_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger tests repo
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: "${{ secrets.PAT_TOKEN }}"
+          repository: adriangavanescu/wordpress-automation
+          event-type: trigger-tests
+
+  wait_for_success_confirmation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for tests
+        id: wait-for-event
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const github = require('@actions/github');
+            const core = require('@actions/core');
+
+            const maxRetries = 60; // Wait for up to 10 minutes (10s x 60 retries)
+            const interval = 10000; // 10 seconds
+            const eventType = "success-event"; // Event type to wait for
+            const payload = "desired-payload"; // Expected payload (optional)
+
+            console.log(`Checking for tests status...`);
+
+            let retries = 0;
+            let eventReceived = false;
+            while (!eventReceived && retries < maxRetries) {
+              const events = await github.rest.activity.listRepositoryEvents({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+              });
+
+              for (const event of events.data) {
+                if (event.type === 'RepositoryDispatchEvent' &&
+                    event.payload.action === eventType &&
+                    (!payload || event.payload.client_payload === payload)) {
+                  eventReceived = true;
+                  console.log("Event received!");
+                  break;
+                }
+              }
+
+              if (!eventReceived) {
+                await new Promise((resolve) => setTimeout(resolve, interval));
+              }
+
+              retries++;
+            }
+
+            if (!eventReceived) {
+              core.setFailed("Timed out waiting for success confirmation.");
+            }
