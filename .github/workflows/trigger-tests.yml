@@ -1,6 +1,8 @@
 name: Trigger tests
 
 on:
+  push:
+    branches: [ main ]
   pull_request:
     branches: [master]
     types: [opened, synchronize]
