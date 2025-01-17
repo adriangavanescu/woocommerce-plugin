@@ -52,6 +52,13 @@ jobs:
               }
             
               const events = await response.json();
+            
+              // Debug: Output each event
+              console.log("Fetched Events:");
+              events.forEach((event, index) => {
+              console.log(`Event ${index + 1}: ${JSON.stringify(event, null, 2)}`);
+              });
+            
               for (const event of events) {
                 if (event.type === 'RepositoryDispatchEvent' &&
                     event.payload.action === eventType &&
