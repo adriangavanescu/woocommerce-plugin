@@ -27,7 +27,7 @@ jobs:
         with:
           script: |
             const githubAction = require('@actions/github');
-            const core = require('@actions/core');
+            const coreAction = require('@actions/core');
 
             const maxRetries = 60; // Wait for up to 10 minutes (10s x 60 retries)
             const interval = 10000; // 10 seconds
@@ -62,5 +62,5 @@ jobs:
             }
 
             if (!eventReceived) {
-              core.setFailed("Timed out waiting for success confirmation.");
+              coreAction.setFailed("Timed out waiting for success confirmation.");
             }
