@@ -7,16 +7,19 @@ on:
     branches: [master]
     types: [opened, synchronize]
 
+env:
+  GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+
 jobs:
-  trigger_tests:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Trigger tests repo
-        uses: peter-evans/repository-dispatch@v1
-        with:
-          token: "${{ secrets.PAT_TOKEN }}"
-          repository: adriangavanescu/wordpress-automation
-          event-type: trigger-tests
+#  trigger_tests:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Trigger tests repo
+#        uses: peter-evans/repository-dispatch@v1
+#        with:
+#          token: "${{ secrets.PAT_TOKEN }}"
+#          repository: adriangavanescu/wordpress-automation
+#          event-type: trigger-tests
 
   wait_for_success_confirmation:
     runs-on: ubuntu-latest
@@ -70,5 +73,3 @@ jobs:
             if (!eventReceived) {
               core.setFailed("Timed out waiting for the event.");
             }
-          env:
-            GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
